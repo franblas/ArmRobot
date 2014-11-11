@@ -1,0 +1,79 @@
+/*	****** Written by François Blas
+ 	****** Last Modification: 27/04/13 	
+	
+	Using the Arduino Mega 2560 										
+*/
+
+/*
+>>>>> Connecter le TX1 (port 18 Arduino Mega 2560) et le RX1 (port 19 Arduino Mega 2560)
+sur le data de l'AX12 (TX1 et RX1 ensemble)
+>>>>> Pas besoin de resistance de pull-up !!!!!!!!!
+*/
+
+//Biblio AX12 Arduino
+#include <ax12.h>
+#include <BioloidController.h>
+
+//Liste de Baudrates standards pour AX12
+long BaudRates[] = {1000000,666667,500000,400000,333333,285714,250000,222222,
+200000,181818,166667,153846,142857,133333,125000,117647,111111,105263,100000,
+95238,90909,86957,83333,80000,76923,74074,71429,68966,66667,64516,62500,60606,
+58824,57143,55556,54054,52632,51282,50000,48780,47619,46512,45455,44444,43478,
+42553,41667,40816,40000,39216,38462,37736,37037,36364,35714,35088,34483,33898,
+33333,32787,32258,31746,31250,30769,30303,29851,29412,28986,28571,28169,27778,
+27397,27027,26667,26316,25974,25641,25316,25000,24691,24390,24096,23810,23529,
+23256,22989,22727,22472,22222,21978,21739,21505,21277,21053,20833,20619,20408,
+20202,20000,19802,19608,19417,19231,19048,18868,18692,18519,18349,18182,18018,
+17857,17699,17544,17391,17241,17094,16949,16807,16667,16529,16393,16260,16129,
+16000,15873,15748,15625,15504,15385,15267,15152,15038,14925,14815,14706,14599,
+14493,14388,14286,14184,14085,13986,13889,13793,13699,13605,13514,13423,13333,
+13245,13158,13072,12987,12903,12821,12739,12658,12579,12500,12422,12346,12270,
+12195,12121,12048,11976,11905,11834,11765,11696,11628,11561,11494,11429,11364,
+11299,11236,11173,11111,11050,10989,10929,10870,10811,10753,10695,10638,10582,
+10526,10471,10417,10363,10309,10256,10204,10152,10101,10050,10000,9950,9901,
+9852,9804,9756,9709,9662,9615,9569,9524,9479,9434,9390,9346,9302,9259,9217,
+9174,9132,9091,9050,9009,8969,8929,8889,8850,8811,8772,8734,8696,8658,8621,
+8584,8547,8511,8475,8439,8403,8368,8333,8299,8264,8230,8197,8163,8130,8097,
+8065,8032,8000,7968,7937,7905,7874,7843};
+
+int pos;    // position AX12 
+int id;   // Identifiant AX12
+int bio;  // baudrate AX12
+
+//Initialisation communication
+BioloidController bioloid=BioloidController(1000000);
+
+
+void setup()
+{
+   pinMode(13, OUTPUT);
+    pos = 511;
+    bio=0;
+    id = 1;
+}
+
+void loop()
+{
+  for(bio=0;bio<=254;bio++)
+  {
+    ax12Init(BaudRates[bio]); //Initialisation nouveau Baudrate
+    for(id=1;id<256;id++)
+    {
+        digitalWrite(13,HIGH);//Allumage LED arduino
+        SetPosition(id,pos); //Changment position si bon baudrate
+        delay(25);
+        SetPosition(id,309);//Changment position si bon baudrate
+        delay(100);
+        ax12SetRegister(id,3,1);//Reset ID a 1
+        delay(100);
+        ax12SetRegister(id,4,1);//Reset baudrate a 1 Mbps
+        delay(25);
+    }
+    digitalWrite(13, LOW);//La led clignote quand tout les identifiants sont testes (pour un baudrate donne)
+    delay(200);
+  }
+    digitalWrite(13, LOW);
+    delay(150000000);
+    //ax12SetRegister2(servo_id, regstart, data);
+}
+
